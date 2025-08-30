@@ -1,0 +1,81 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e1e1e1fc;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 90%;
+    max-width: 720px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    overflow: auto;
+}
+
+img {
+    display: block;
+    margin: 0 auto 10px;
+}
+
+h1 {
+    font-size: 1.1em;
+    font-style: italic;
+    text-align: center;
+    margin: 6px 0 12px;
+}
+
+#expense-history {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+thead {
+    background-color: #f8f8f8;
+}
+
+thead th {
+    font-size: 0.9em;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid #e6e6e6;
+    word-wrap: break-word;
+}
+
+tbody td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+
+tbody td:nth-child(1), thead th:nth-child(1) { text-align: center; } /* Date */
+tbody td:nth-child(2), thead th:nth-child(2) { text-align: left; }   /* Expense Name */
+tbody td:nth-child(3), thead th:nth-child(3) { text-align: right; }  /* Amount */
+tbody td:nth-child(4), thead th:nth-child(4) { text-align: center; } /* Category */
+tbody td:nth-child(5), thead th:nth-child(5) { text-align: left; }   /* Description */
+
+@media (max-width: 480px) {
+    thead th, tbody td { padding: 8px; font-size: 0.9em; }
+    .container { padding: 12px; }
+}
+
+
+

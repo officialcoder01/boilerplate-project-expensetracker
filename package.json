@@ -1,0 +1,25 @@
+{
+  "name": "boilerplate-project-expensetrecker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "expense-tracker",
+    "boilerplate"
+  ],
+  "description": "A simple expense tracker application built with Express and MongoDB.",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.4"
+  },
+  "author": "Zion Musa",
+  "license": "ISC"
+}
