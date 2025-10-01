@@ -13,14 +13,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs');
 
-app.get('/', (req, res) => {
-  res.render('home', { userId: req.user ? req.user._id : null });
-});
-
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true})
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log(err));
+
+// Helper to clean and validate potential id strings (removes leading ':' and checks ObjectId validity)
+function cleanAndValidateId(rawId) {
+  if (!rawId) return null;
+  if (typeof rawId !== 'string' && typeof rawId !== 'number') return null;
+  const str = String(rawId).trim().replace(/^:/, ''); // remove leading colon if present
+  return mongoose.Types.ObjectId.isValid(str) ? str : null;
+}
 
 const newSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
@@ -40,7 +44,6 @@ const expenseSchema = new mongoose.Schema({
 
 const Expense = mongoose.model('Expense', expenseSchema);
 
-
 // Create new user and redirect them to expenses.ejs
 app.post('/api/users', async (req, res) => {
   try {
@@ -57,34 +60,45 @@ app.post('/api/users', async (req, res) => {
   }
 });
 
+// Middleware: load user if a valid userId is present
 app.use('/api/users/:userId/expenses', async (req, res, next) => {
-  const userId = req.params.userId || req.body.userId;
+  const rawId = req.params.userId || req.body.userId;
+  const userId = cleanAndValidateId(rawId);
+
   if (userId) {
     try {
-      const user = await newUser.findById(userId);
-      
+      const user = await newUser.findById(userId).lean();
       if (user) {
         req.user = user;
       }
     } catch (err) {
       console.error('Middleware Error:', err);
+      // don't crash the request pipeline; let the route handle missing user
     }
   }
 
   next();
 });
 
+app.get('/', (req, res) => {
+  res.render('home', { userId: req.user ? req.user._id : null });
+});
+
 app.get('/api/users/:userId/expenses', (req, res) => {
-  const userId = req.user ? req.user._id : req.params.userId;
-  res.render('expenses', { userId });
+  const userId = req.user ? String(req.user._id) : cleanAndValidateId(req.params.userId);
+  // ensure template always receives the variables it expects
+  res.render('expenses', { userId, showHistoryChoice: false, message: null });
 });
 
 // Route to handle expense tracking
 app.post('/api/users/:userId/expenses', async (req, res) => {
   try {
-    const userId = req.body.userId;
-    const getUser = await newUser.findById(userId);
+    const rawUserId = req.body.userId || req.params.userId;
+    const userId = cleanAndValidateId(rawUserId) || (req.user && String(req.user._id));
 
+    if (!userId) return res.status(400).send('User ID required');
+
+    const getUser = await newUser.findById(userId);
     if (!getUser) {
       return res.status(404).send('User not found');
     }
@@ -95,12 +109,17 @@ app.post('/api/users/:userId/expenses', async (req, res) => {
       amount: req.body.amount,
       description: req.body.description,
       category: req.body.category,
-      date: req.body.date ? Date(req.body.date) : new Date()
+      date: req.body.date ? new Date(req.body.date) : new Date()
     });
 
     await expense.save();
 
-    res.redirect(`/api/users/${getUser._id}/expenses/history`);
+    // Render the expenses page with a confirmation and an option to view history
+    return res.render('expenses', {
+      userId: String(getUser._id),
+      message: 'Expense saved successfully.',
+      showHistoryChoice: true
+    });
   } catch (error) {
     res.status(400).json({ error: 'Error creating expense' });
     console.error(error)
@@ -109,13 +128,13 @@ app.post('/api/users/:userId/expenses', async (req, res) => {
 
 app.get('/api/users/:userId/expenses/history', async (req, res) => {
   try {
-    const userId = req.params.userId || (req.user && req.user._id);
+    const userId = req.user ? String(req.user._id) : cleanAndValidateId(req.params.userId);
     if (!userId) return res.status(400).send('User ID required');
 
     const expenses = await Expense.find({ userId }).sort({ date: -1 }).lean();
 
     // Add a formatted date field to avoid calling Date methods in the template
-    expenses.forEach(e => {
+    (expenses || []).forEach(e => {
       e.formattedDate = e.date ? new Date(e.date).toLocaleDateString() : '';
     });
 
