@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="/index.css" type="text/css">
     </head>
     <body>
-        <form action="/api/users/:userId/expenses" method="POST">
+        <form action="/api/users/<%= userId %>/expenses" method="POST">
             <div id="new-expense" class="container">
                 <img src="https://i.pinimg.com/736x/52/35/6c/52356cf30d16a9e2779679ce0ed593e4.jpg" alt="logo img" width="40px" />
                 <h1>Spendora</h1>
@@ -29,5 +29,16 @@
                 <textarea id="description" name="description" placeholder="Description (optional)"></textarea>
                 <input type="submit" value="Add Expense" />
             </div>
+        </form>
+
+        <% if (typeof message !== 'undefined' && message) { %>
+          <div class="alert alert-success"><%= message %></div>
+        <% } %>
+
+        <% if (typeof showHistoryChoice !== 'undefined' && showHistoryChoice) { %>
+          <div class="choice">
+            <a class="btn btn-primary" href="/api/users/<%= userId %>/expenses/history">View history</a>
+          </div>
+        <% } %>
     </body>
 </html>
