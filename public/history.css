@@ -72,6 +72,11 @@ tbody td:nth-child(3), thead th:nth-child(3) { text-align: right; }  /* Amount *
 tbody td:nth-child(4), thead th:nth-child(4) { text-align: center; } /* Category */
 tbody td:nth-child(5), thead th:nth-child(5) { text-align: left; }   /* Description */
 
+.choice {
+    text-align: center;
+    margin-top: 15px;
+}
+
 @media (max-width: 480px) {
     thead th, tbody td { padding: 8px; font-size: 0.9em; }
     .container { padding: 12px; }
